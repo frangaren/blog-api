@@ -4,6 +4,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const { fork } = require('child_process');
+const path = require('path');
 
 require('dotenv').config();
 
@@ -13,6 +14,9 @@ const port = process.env.PORT || 8080;
 app.use(morgan('combined'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
+
+const router = require(path.join(__dirname, 'router', 'router.js'));
+app.use('/', router);
 
 app.use(function (req, res, next) {
     let error = new Error('Not Found');

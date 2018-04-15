@@ -9,15 +9,23 @@ exports.list = async function (args) {
     return users;
 }
 
-exports.retrieve = async function (args) {
-    const user = await User.find({_id: args.id}).exec();
-    return user;
-}
-
 exports.create = async function (args) {
     let user = new User();
     user.username = args.username;
     user.password = args.password;
+    user = await user.save();
+    return user;
+}
+
+exports.retrieve = async function (args) {
+    const user = await User.findById(args.id).exec();
+    return user;
+}
+
+exports.update = async function (args) {
+    let user = await User.findById(args.id).exec();
+    user.username = args.username || user.username;
+    user.password = args.password || user.password;
     user = await user.save();
     return user;
 }

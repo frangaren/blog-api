@@ -7,7 +7,7 @@ const postSchema = mongoose.Schema({
     creationDate: Date,
     text: String,
     tags: [String],
-    author: mongoose.Schema.Types.ObjectId
+    authorId: mongoose.Schema.Types.ObjectId
 });
 
 const Post = mongoose.model('Post', postSchema);

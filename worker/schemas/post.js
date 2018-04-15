@@ -6,8 +6,7 @@ const postSchema = mongoose.Schema({
     title: String,
     creationDate: Date,
     text: String,
-    tags: [String],
-    authorId: mongoose.Schema.Types.ObjectId
+    author: mongoose.Schema.Types.ObjectId
 });
 
 const Post = mongoose.model('Post', postSchema);

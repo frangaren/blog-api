@@ -14,8 +14,12 @@ exports.create = async function (args) {
     post.title = args.title;
     post.creationDate = args.creationDate;
     post.text = args.text;
-    post.tags = args.tags;
-    post.authorId = args.authorId;
+    post.author = args.author;
     post = await post.save();
+    return post;
+}
+
+exports.retrieve = async function (args) {
+    const post = Post.findById(args.id).exec();
     return post;
 }

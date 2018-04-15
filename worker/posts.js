@@ -31,3 +31,8 @@ exports.update = async function (args) {
     post = await post.save();
     return post;
 }
+
+exports.delete = async function (args) {
+    const post = await Post.findByIdAndRemove(args.id).exec();
+    return post;
+}

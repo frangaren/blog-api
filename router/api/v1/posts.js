@@ -7,6 +7,7 @@ const router = express.Router();
 router.get('/', listPosts);
 router.post('/', createPost);
 router.get('/:id', retrievePost);
+router.put('/:id', updatePost);
 
 function listPosts(req, res, next) {
     const worker = req.app.get('worker');
@@ -59,6 +60,26 @@ function retrievePost(req, res, next) {
         function: 'retrieve',
         args: {
             id: req.params.id
+        }
+    });
+}
+
+function updatePost(req, res, next) {
+    const worker = req.app.get('worker');
+    worker.once('message', function (msg) {
+        if (msg.success) {
+            res.json(msg.reply);
+        } else {
+            next(msg.error);
+        }
+    });
+    worker.send({
+        module: 'posts',
+        function: 'update',
+        args: {
+            id: req.params.id,
+            title: req.body.title,
+            text: req.body.text
         }
     });
 }

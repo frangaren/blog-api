@@ -8,6 +8,7 @@ router.get('/', listUsers);
 router.post('/', createUser);
 router.get('/:id', retrieveUser);
 router.put('/:id', updateUser);
+router.delete('/:id', deleteUser);
 
 function listUsers(req, res, next) {
     const worker = req.app.get('worker');
@@ -78,6 +79,24 @@ function updateUser(req, res, next) {
             id: req.params.id,
             username: req.body.username,
             password: req.body.password
+        }
+    });
+}
+
+function deleteUser(req, res, next) {
+    const worker = req.app.get('worker');
+    worker.once('message', function (msg) {
+        if (msg.success) {
+            res.json(msg.reply);
+        } else {
+            next(msg.error);
+        }
+    });
+    worker.send({
+        module: 'users',
+        function: 'delete',
+        args: {
+            id: req.params.id
         }
     });
 }

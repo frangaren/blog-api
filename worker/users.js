@@ -29,3 +29,8 @@ exports.update = async function (args) {
     user = await user.save();
     return user;
 }
+
+exports.delete = async function (args) {
+    const user = await User.findByIdAndRemove(args.id).exec();
+    return user;
+}

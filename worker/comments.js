@@ -8,3 +8,13 @@ exports.list = async function (args) {
     const comments = await Comment.find().exec();
     return comments;
 }
+
+exports.create = async function (args) {
+    let comment = new Comment();
+    comment.post = args.post;
+    comment.author = args.author;
+    comment.creationDate = args.creationDate;
+    comment.text = args.text;
+    comment = await comment.save();
+    return comment;
+}

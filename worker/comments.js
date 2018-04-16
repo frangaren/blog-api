@@ -32,3 +32,8 @@ exports.update = async function (args) {
     comment = await comment.save();
     return comment;
 }
+
+exports.delete = async function (args) {
+    const comment = await Comment.findByIdAndRemove(args.id);
+    return comment;
+}

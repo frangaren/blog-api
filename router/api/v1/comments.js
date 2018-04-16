@@ -8,6 +8,7 @@ router.get('/', listComments);
 router.post('/', createComment);
 router.get('/:id', retrieveComment);
 router.put('/:id', updateComment);
+router.delete('/:id', deleteComment);
 
 function listComments(req, res, next) {
     const worker = req.app.get('worker');
@@ -81,6 +82,24 @@ function updateComment(req, res, next) {
             post: req.body.post,
             author: req.body.author,
             text: req.body.text
+        }
+    });
+}
+
+function deleteComment(req, res, next) {
+    const worker = req.app.get('worker');
+    worker.once('message', function (msg) {
+        if (msg.success) {
+            res.json(msg.reply);
+        } else {
+            next(msg.error);
+        }
+    });
+    worker.send({
+        module: 'comments',
+        function: 'delete',
+        args: {
+            id: req.params.id
         }
     });
 }

@@ -40,7 +40,6 @@ function createPost(req, res, next) {
         function: 'create',
         args: {
             title: req.body.title,
-            creationDate: Date.now(),
             text: req.body.text,
             author: req.body.author
         }

@@ -3,6 +3,8 @@
 const mongoose = require('mongoose');
 
 const User = mongoose.model('User');
+const Post = mongoose.model('Post');
+const Comment = mongoose.model('Comment');
 
 exports.list = async function (args) {
     const users = await User.find().exec();
@@ -32,5 +34,7 @@ exports.update = async function (args) {
 
 exports.delete = async function (args) {
     const user = await User.findByIdAndRemove(args.id).exec();
+    await Post.find({author:user._id}).remove().exec();
+    await Comment.find({author:user._id}).remove().exec();
     return user;
 }

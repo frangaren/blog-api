@@ -13,7 +13,6 @@ exports.create = async function (args) {
     let comment = new Comment();
     comment.post = args.post;
     comment.author = args.author;
-    comment.creationDate = args.creationDate;
     comment.text = args.text;
     comment = await comment.save();
     return comment;

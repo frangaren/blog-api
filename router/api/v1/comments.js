@@ -41,7 +41,6 @@ function createComment(req, res, next) {
         args: {
             post: req.body.post,
             author: req.body.author,
-            creationDate: Date.now(),
             text: req.body.text
         }
     });

@@ -17,12 +17,12 @@ mongoose.connect(dbUrl, connectionSettings);
 
 mongoose.connection.on('error', console.error.bind(console, 'DB error: '));
 mongoose.connection.once('open', function () {
-    //const Comment = require(path.join(__dirname, 'schemas', 'comment.js'));
+    const Comment = require(path.join(__dirname, 'schemas', 'comment.js'));
     const Post = require(path.join(__dirname, 'schemas', 'post.js'));
     const User = require(path.join(__dirname, 'schemas', 'user.js'));
 
     const modules = {
-        //'comments': require(path.join(__dirname, 'comments.js')),
+        'comments': require(path.join(__dirname, 'comments.js')),
         'posts': require(path.join(__dirname, 'posts.js')),
         'users': require(path.join(__dirname, 'users.js'))
     };

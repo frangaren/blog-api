@@ -23,3 +23,12 @@ exports.retrieve = async function (args) {
     const comment = await Comment.findById(args.id).exec();
     return comment;
 }
+
+exports.update = async function (args) {
+    let comment = await Comment.findById(args.id).exec();
+    comment.post = args.post || comment.post;
+    comment.author = args.author || comment.author;
+    comment.text = args.text || comment.text;
+    comment = await comment.save();
+    return comment;
+}

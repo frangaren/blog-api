@@ -6,6 +6,7 @@ const router = express.Router();
 
 router.get('/', listComments);
 router.post('/', createComment);
+router.get('/:id', retrieveComment);
 
 function listComments(req, res, next) {
     const worker = req.app.get('worker');
@@ -44,4 +45,21 @@ function createComment(req, res, next) {
     });
 }
 
+function retrieveComment(req, res, next) {
+    const worker = req.app.get('worker');
+    worker.once('message', function (msg) {
+        if (msg.success) {
+            res.json(msg.reply);
+        } else {
+            next(msg.error);
+        }
+    });
+    worker.send({
+        module: 'comments',
+        function: 'retrieve',
+        args: {
+            id: req.params.id
+        }
+    });
+}
 module.exports = router;

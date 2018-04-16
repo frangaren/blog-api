@@ -18,3 +18,8 @@ exports.create = async function (args) {
     comment = await comment.save();
     return comment;
 }
+
+exports.retrieve = async function (args) {
+    const comment = await Comment.findById(args.id).exec();
+    return comment;
+}

@@ -38,3 +38,8 @@ exports.delete = async function (args) {
     await Comment.find({author:user._id}).remove().exec();
     return user;
 }
+
+exports.exists = async function (args) {
+    const user = await User.findById(args.id).exec();
+    return user !== null;
+}

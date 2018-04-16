@@ -6,8 +6,11 @@ const router = express.Router();
 
 router.get('/', listUsers);
 router.post('/', createUser);
+router.get('/:id', existsUser);
 router.get('/:id', retrieveUser);
+router.put('/:id', existsUser);
 router.put('/:id', updateUser);
+router.delete('/:id', existsUser);
 router.delete('/:id', deleteUser);
 
 function listUsers(req, res, next) {
@@ -95,6 +98,32 @@ function deleteUser(req, res, next) {
     worker.send({
         module: 'users',
         function: 'delete',
+        args: {
+            id: req.params.id
+        }
+    });
+}
+
+function existsUser(req, res, next) {
+    const worker = req.app.get('worker');
+    worker.once('message', function (msg) {
+        console.log(msg);
+        if (msg.success) {
+            if (msg.reply) {
+                next();
+            } else {
+                let error = new Error('User Not Found');
+                error.status = 404;
+                next(error);
+            }
+        } else {
+            next(msg.error);
+        }
+    });
+
+    worker.send({
+        module: 'users',
+        function: 'exists',
         args: {
             id: req.params.id
         }

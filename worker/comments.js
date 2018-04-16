@@ -36,3 +36,8 @@ exports.delete = async function (args) {
     const comment = await Comment.findByIdAndRemove(args.id);
     return comment;
 }
+
+exports.exists = async function (args) {
+    const comment = await Comment.findById(args.id).exec();
+    return comment !== null;
+}

@@ -6,8 +6,11 @@ const router = express.Router();
 
 router.get('/', listPosts);
 router.post('/', createPost);
+router.get('/:id', existsPost);
 router.get('/:id', retrievePost);
+router.put('/:id', existsPost);
 router.put('/:id', updatePost);
+router.delete('/:id', existsPost);
 router.delete('/:id', deletePost);
 
 function listPosts(req, res, next) {
@@ -96,6 +99,32 @@ function deletePost(req, res, next) {
     worker.send({
         module: 'posts',
         function: 'delete',
+        args: {
+            id: req.params.id
+        }
+    });
+}
+
+function existsPost(req, res, next) {
+    const worker = req.app.get('worker');
+    worker.once('message', function (msg) {
+        console.log(msg);
+        if (msg.success) {
+            if (msg.reply) {
+                next();
+            } else {
+                let error = new Error('Post Not Found');
+                error.status = 404;
+                next(error);
+            }
+        } else {
+            next(msg.error);
+        }
+    });
+
+    worker.send({
+        module: 'posts',
+        function: 'exists',
         args: {
             id: req.params.id
         }

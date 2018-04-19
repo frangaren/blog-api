@@ -43,3 +43,44 @@ exports.exists = async function (args) {
     const user = await User.findById(args.id).exec();
     return user !== null;
 }
+
+exports.validateUsername = async function (args) {
+    const regex = /^\w{3,16}$/gi;
+    if (!regex.test(args.username)) {
+        return {
+            valid: false,
+            tip: 'Username must match /^\w{3,16}$/gi.'
+        };
+    } else {
+        const user = await User.findOne({username: args.username}).exec();
+        if (user != null && user._id != args.id) {
+            return {
+                valid: false,
+                tip: 'Username already taken.'
+            };
+        } else {
+            return {
+                valid: true
+            }
+        }
+    }
+}
+
+exports.validatePassword = async function (args) {
+    const lowercaseLetters = /[a-z]/g.test(args.password);
+    const uppercaseLetters = /[A-Z]/g.test(args.password);
+    const numbers = /[0-9]/g.test(args.password);
+    const symbols = /[^A-Z0-9a-z]/g.test(args.password);
+    const length = args.password.length;
+    if (lowercaseLetters && uppercaseLetters && numbers && symbols && length >= 8) {
+        return {
+            valid: true
+        };
+    } else {
+        return {
+            valid: false,
+            tip: 'Passwords must have at least 8 characters: 1 lowercase ' + 
+                 'letter, 1 uppercase letter, 1 number and 1 symbol.'
+        };
+    }
+}

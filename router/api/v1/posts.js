@@ -117,7 +117,6 @@ function deletePost(req, res, next) {
 function existsPost(req, res, next) {
     const worker = req.app.get('worker');
     worker.once('message', function (msg) {
-        console.log(msg);
         if (msg.success) {
             if (msg.reply) {
                 next();

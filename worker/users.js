@@ -1,10 +1,13 @@
 'use strict';
 
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 
 const User = mongoose.model('User');
 const Post = mongoose.model('Post');
 const Comment = mongoose.model('Comment');
+
+const saltRounds = 10;
 
 exports.list = async function (args) {
     const users = await User.find().exec();
@@ -83,4 +86,9 @@ exports.validatePassword = async function (args) {
                  'letter, 1 uppercase letter, 1 number and 1 symbol.'
         };
     }
+}
+
+exports.hashPassword = async function (args) {
+    let hashed = await bcrypt.hash(args.password, saltRounds);
+    return hashed;
 }

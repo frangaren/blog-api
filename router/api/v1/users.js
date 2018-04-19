@@ -10,6 +10,7 @@ router.post('/', requireUsername);
 router.post('/', requirePassword);
 router.post('/', validateUsername);
 router.post('/', validatePassword);
+router.post('/', hashPassword);
 router.post('/', createUser);
 
 router.get('/:id', existsUser);
@@ -18,6 +19,7 @@ router.get('/:id', retrieveUser);
 router.put('/:id', existsUser);
 router.put('/:id', validateUsername);
 router.put('/:id', validatePassword);
+router.put('/:id', hashPassword);
 router.put('/:id', updateUser);
 
 router.delete('/:id', existsUser);
@@ -208,6 +210,29 @@ function validatePassword(req, res, next) {
         worker.send({
             module: 'users',
             function: 'validatePassword',
+            args: {
+                password: req.body.password
+            }
+        });
+    }
+}
+
+function hashPassword(req, res, next) {
+    if (!('password' in req.body)) {
+        next();
+    } else {
+        const worker = req.app.get('worker');
+        worker.once('message', function (msg) {
+            if (msg.success) {
+                req.body.password = msg.reply;
+                next();
+            } else {
+                next(msg.error);
+            }
+        });
+        worker.send({
+            module: 'users',
+            function: 'hashPassword',
             args: {
                 password: req.body.password
             }

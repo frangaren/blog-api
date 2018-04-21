@@ -13,6 +13,9 @@ router.post('/', validatePassword);
 router.post('/', hashPassword);
 router.post('/', createUser);
 
+router.get('/:id/comments', existsUser);
+router.get('/:id/comments', retrieveUserComments);
+
 router.get('/:id', existsUser);
 router.get('/:id', retrieveUser);
 
@@ -56,6 +59,24 @@ function createUser(req, res, next) {
         args: {
             username: req.body.username,
             password: req.body.password
+        }
+    });
+}
+
+function retrieveUserComments(req, res, next) {
+    const worker = req.app.get('worker');
+    worker.once('message', function (msg) {
+        if (msg.success) {
+            res.json(msg.reply);
+        } else {
+            next(msg.error);
+        }
+    });
+    worker.send({
+        module: 'users',
+        function: 'retrieveComments',
+        args: {
+            id: req.params.id
         }
     });
 }

@@ -22,6 +22,11 @@ exports.create = async function (args) {
     return user;
 }
 
+exports.retrieveComments = async function (args) {
+    const comments = await Comment.find({ author: args.id }).exec();
+    return comments;
+}
+
 exports.retrieve = async function (args) {
     const user = await User.findById(args.id).exec();
     return user;

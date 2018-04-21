@@ -27,6 +27,11 @@ exports.retrieveComments = async function (args) {
     return comments;
 }
 
+exports.retrievePosts = async function (args) {
+    const posts = await Post.find({ author: args.id }).exec();
+    return posts;
+}
+
 exports.retrieve = async function (args) {
     const user = await User.findById(args.id).exec();
     return user;

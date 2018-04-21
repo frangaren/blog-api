@@ -16,10 +16,10 @@ router.post('/', createComment);
 router.get('/:id', existsComment);
 router.get('/:id', retrieveComment);
 
-router.put('/:id', existsComment);
-router.put('/:id', existsAuthor);
-router.put('/:id', existsPost);
-router.put('/:id', updateComment);
+router.patch('/:id', existsComment);
+router.patch('/:id', existsAuthor);
+router.patch('/:id', existsPost);
+router.patch('/:id', updateComment);
 
 router.delete('/:id', existsComment);
 router.delete('/:id', deleteComment);
@@ -44,7 +44,7 @@ function createComment(req, res, next) {
     const worker = req.app.get('worker');
     worker.once('message', function (msg) {
         if (msg.success) {
-            res.json(msg.reply);
+            res.status(201).json(msg.reply);
         } else {
             next(msg.error);
         }

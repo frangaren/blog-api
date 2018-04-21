@@ -59,6 +59,7 @@ exports.validateUsername = async function (args) {
         if (user != null && user._id != args.id) {
             return {
                 valid: false,
+                status: 409,
                 tip: 'Username already taken.'
             };
         } else {

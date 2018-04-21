@@ -15,9 +15,9 @@ router.post('/', createPost);
 router.get('/:id', existsPost);
 router.get('/:id', retrievePost);
 
-router.put('/:id', existsPost);
-router.put('/:id', existsAuthor);
-router.put('/:id', updatePost);
+router.patch('/:id', existsPost);
+router.patch('/:id', existsAuthor);
+router.patch('/:id', updatePost);
 
 router.delete('/:id', existsPost);
 router.delete('/:id', deletePost);
@@ -42,7 +42,7 @@ function createPost(req, res, next) {
     const worker = req.app.get('worker');
     worker.once('message', function (msg) {
         if (msg.success) {
-            res.json(msg.reply);
+            res.status(201).json(msg.reply);
         } else {
             next(msg.error);
         }

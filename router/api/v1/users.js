@@ -16,11 +16,11 @@ router.post('/', createUser);
 router.get('/:id', existsUser);
 router.get('/:id', retrieveUser);
 
-router.put('/:id', existsUser);
-router.put('/:id', validateUsername);
-router.put('/:id', validatePassword);
-router.put('/:id', hashPassword);
-router.put('/:id', updateUser);
+router.patch('/:id', existsUser);
+router.patch('/:id', validateUsername);
+router.patch('/:id', validatePassword);
+router.patch('/:id', hashPassword);
+router.patch('/:id', updateUser);
 
 router.delete('/:id', existsUser);
 router.delete('/:id', deleteUser);
@@ -45,7 +45,7 @@ function createUser(req, res, next) {
     const worker = req.app.get('worker');
     worker.once('message', function (msg) {
         if (msg.success) {
-            res.json(msg.reply);
+            res.status(201).json(msg.reply);
         } else {
             next(msg.error);
         }
@@ -161,7 +161,7 @@ function validateUsername(req, res, next) {
                     next();
                 } else {
                     let error = new Error(`Invalid Username: ${msg.reply.tip}`);
-                    error.status = 422;
+                    error.status = msg.reply.status || 422;
                     next(error);
                 }
             } else {

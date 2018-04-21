@@ -12,6 +12,9 @@ router.post('/', requireText);
 router.post('/', existsAuthor);
 router.post('/', createPost);
 
+router.get('/:id/comments', existsPost);
+router.get('/:id/comments', retrievePostComments);
+
 router.get('/:id', existsPost);
 router.get('/:id', retrievePost);
 
@@ -54,6 +57,24 @@ function createPost(req, res, next) {
             title: req.body.title,
             text: req.body.text,
             author: req.body.author
+        }
+    });
+}
+
+function retrievePostComments(req, res, next) {
+    const worker = req.app.get('worker');
+    worker.once('message', function (msg) {
+        if (msg.success) {
+            res.json(msg.reply);
+        } else {
+            next(msg.error);
+        }
+    });
+    worker.send({
+        module: 'posts',
+        function: 'retrieveComments',
+        args: {
+            id: req.params.id
         }
     });
 }

@@ -19,6 +19,11 @@ exports.create = async function (args) {
     return post;
 }
 
+exports.retrieveComments = async function (args) {
+    const comments = await Comment.find({ post: args.id }).exec();
+    return comments;
+}
+
 exports.retrieve = async function (args) {
     const post = Post.findById(args.id).exec();
     return post;

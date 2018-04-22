@@ -7,8 +7,11 @@ const router = express.Router();
 router.get('/', listUsers);
 
 router.post('/', requireUsername);
+router.post('/', requireEmail);
+router.post('/', requireName);
 router.post('/', requirePassword);
 router.post('/', validateUsername);
+router.post('/', validateEmail);
 router.post('/', validatePassword);
 router.post('/', hashPassword);
 router.post('/', createUser);
@@ -24,6 +27,7 @@ router.get('/:id', retrieveUser);
 
 router.patch('/:id', existsUser);
 router.patch('/:id', validateUsername);
+router.patch('/:id', validateEmail);
 router.patch('/:id', validatePassword);
 router.patch('/:id', hashPassword);
 router.patch('/:id', updateUser);
@@ -61,6 +65,8 @@ function createUser(req, res, next) {
         function: 'create',
         args: {
             username: req.body.username,
+            email: req.body.email,
+            name: req.body.name,
             password: req.body.password
         }
     });
@@ -135,6 +141,8 @@ function updateUser(req, res, next) {
         args: {
             id: req.params.id,
             username: req.body.username,
+            email: req.body.email,
+            name: req.body.name,
             password: req.body.password
         }
     });
@@ -218,6 +226,55 @@ function validateUsername(req, res, next) {
                 username: req.body.username
             }
         });
+    }
+}
+
+function requireEmail(req, res, next) {
+    if (!('email' in req.body)) {
+        let error = new Error('Email Not Provided');
+        error.status = 422;
+        next(error);
+    } else {
+        next();
+    }
+}
+
+function validateEmail(req, res, next) {
+    if (!('email' in req.body)) {
+        next();
+    } else {
+        const worker = req.app.get('worker');
+        worker.once('message', function (msg) {
+            if (msg.success) {
+                if (msg.reply.valid) {
+                    next();
+                } else {
+                    let error = new Error(`Invalid Email: ${msg.reply.tip}`);
+                    error.status = msg.reply.status ||  422;
+                    next(error);
+                }
+            } else {
+                next(msg.error);
+            }
+        });
+        worker.send({
+            module: 'users',
+            function: 'validateEmail',
+            args: {
+                id: req.params.id,
+                email: req.body.email
+            }
+        });
+    }
+}
+
+function requireName(req, res, next) {
+    if (!('name' in req.body)) {
+        let error = new Error('Name Not Provided');
+        error.status = 422;
+        next(error);
+    } else {
+        next();
     }
 }
 

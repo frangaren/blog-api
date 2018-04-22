@@ -7,10 +7,14 @@ const Comment = mongoose.model('Comment');
 
 const userSchema = mongoose.Schema({
     username: String,
+    email: String,
+    name: String,
     password: String
 });
 
 userSchema.path('username').required(true).unique(true);
+userSchema.path('email').required(true).unique(true);
+userSchema.path('name').required(true);
 userSchema.path('password').required(true);
 
 const User = mongoose.model('User', userSchema);

@@ -17,6 +17,8 @@ exports.list = async function (args) {
 exports.create = async function (args) {
     let user = new User();
     user.username = args.username;
+    user.email = args.email;
+    user.name = args.name;
     user.password = args.password;
     user = await user.save();
     return user;
@@ -40,6 +42,8 @@ exports.retrieve = async function (args) {
 exports.update = async function (args) {
     let user = await User.findById(args.id).exec();
     user.username = args.username || user.username;
+    user.email = args.email || user.email;
+    user.name = args.name || user.name;
     user.password = args.password || user.password;
     user = await user.save();
     return user;
@@ -62,7 +66,7 @@ exports.validateUsername = async function (args) {
     if (!regex.test(args.username)) {
         return {
             valid: false,
-            tip: 'Username must match /^\w{3,16}$/gi.'
+            tip: 'Username must match /^\\w{3,16}$/gi.'
         };
     } else {
         const user = await User.findOne({username: args.username}).exec();
@@ -71,6 +75,29 @@ exports.validateUsername = async function (args) {
                 valid: false,
                 status: 409,
                 tip: 'Username already taken.'
+            };
+        } else {
+            return {
+                valid: true
+            }
+        }
+    }
+}
+
+exports.validateEmail = async function (args) {
+    const regex = /^\w+@\w+\.\w+$/gi;
+    if (!regex.test(args.email)) {
+        return {
+            valid: false,
+            tip: 'Email must match /^\\w+@\\w+\\.\\w+$/gi.'
+        };
+    } else {
+        const user = await User.findOne({ email: args.email }).exec();
+        if (user != null && user._id != args.id) {
+            return {
+                valid: false,
+                status: 409,
+                tip: 'Email already taken.'
             };
         } else {
             return {

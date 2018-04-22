@@ -40,7 +40,7 @@ function createPost(req, res, next) {
         author: req.body.author
     };
     worker.posts.create(args)
-        .then(reply => res.json(reply))
+        .then(reply => res.status(201).json(reply))
         .catch(error => next(error));
 }
 

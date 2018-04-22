@@ -51,7 +51,7 @@ function createUser(req, res, next) {
         password: req.body.password
     };
     worker.users.create(args)
-        .then(reply => res.json(reply))
+        .then(reply => res.status(201).json(reply))
         .catch(error => next(error));
 }
 

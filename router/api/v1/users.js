@@ -109,21 +109,13 @@ function retrieveUserPosts(req, res, next) {
 }
 
 function retrieveUser(req, res, next) {
-    const worker = req.app.get('worker');
-    worker.once('message', function (msg) {
-        if (msg.success) {
-            res.json(msg.reply);
-        } else {
-            next(msg.error);
-        }
-    });
-    worker.send({
-        module: 'users',
-        function: 'retrieve',
-        args: {
-            id: req.params.id
-        }
-    });    
+    const worker = req.app.get('worker-proxy');
+    const args = {
+        id: req.params.id
+    };
+    worker.users.retrieve(args)
+        .then(reply => res.json(reply))
+        .catch(error => next(error));   
 }
 
 function updateUser(req, res, next) {
@@ -167,27 +159,21 @@ function deleteUser(req, res, next) {
 }
 
 function existsUser(req, res, next) {
-    const worker = req.app.get('worker');
-    worker.once('message', function (msg) {
-        if (msg.success) {
-            if (msg.reply) {
+    const worker = req.app.get('worker-proxy');
+    const args = {
+        id: req.params.id
+    };
+    worker.users.exists(args)
+        .then(reply => {
+            if (reply) {
                 next();
             } else {
                 let error = new Error('User Not Found');
                 error.status = 404;
-                next(error);
+                next(error);            
             }
-        } else {
-            next(msg.error);
-        }
-    });
-    worker.send({
-        module: 'users',
-        function: 'exists',
-        args: {
-            id: req.params.id
-        }
-    });
+        })
+        .catch(error => next(error));
 }
 
 function requireUsername(req, res, next) {

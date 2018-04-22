@@ -28,16 +28,25 @@ mongoose.connection.once('open', function () {
     };
 
     process.on('message', function (msg) {
+        console.log(JSON.stringify(msg));
         modules[msg.module][msg.function](msg.args)
         .then((reply) => {
             process.send({
                 success: true,
+                from: {
+                    module: msg.module,
+                    function: msg.function
+                },
                 reply: reply
             });
         })
         .catch((error) => {
             process.send({
                 success: false,
+                from: {
+                    module: msg.module,
+                    function: msg.function
+                },
                 error: error
             });
         });

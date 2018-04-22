@@ -12,7 +12,9 @@ const app = express();
 const port = process.env.PORT || 8080;
 
 const worker = fork(path.join(__dirname, 'worker', 'worker.js'));
+const WorkerProxy = require(path.join(__dirname, 'worker-proxy.js'));
 app.set('worker', worker);
+app.set('worker-proxy', WorkerProxy(worker));
 
 app.use(morgan('combined'));
 app.use(bodyParser.json());

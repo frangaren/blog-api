@@ -26,138 +26,82 @@ router.delete('/:id', existsPost);
 router.delete('/:id', deletePost);
 
 function listPosts(req, res, next) {
-    const worker = req.app.get('worker');
-    worker.once('message', function (msg) {
-        if (msg.success) {
-            res.json(msg.reply);
-        } else {
-            next(msg.error);
-        }
-    });
-    worker.send({
-        module: 'posts',
-        function: 'list',
-        args: {}
-    });
+    const worker = req.app.get('worker-proxy');
+    worker.posts.list()
+        .then(reply => res.json(reply))
+        .catch(error => next(error));
 }
 
 function createPost(req, res, next) {
-    const worker = req.app.get('worker');
-    worker.once('message', function (msg) {
-        if (msg.success) {
-            res.status(201).json(msg.reply);
-        } else {
-            next(msg.error);
-        }
-    });
-    worker.send({
-        module: 'posts',
-        function: 'create',
-        args: {
-            title: req.body.title,
-            text: req.body.text,
-            author: req.body.author
-        }
-    });
+    const worker = req.app.get('worker-proxy');
+    const args = {
+        title: req.body.title,
+        text: req.body.text,
+        author: req.body.author
+    };
+    worker.posts.create(args)
+        .then(reply => res.json(reply))
+        .catch(error => next(error));
 }
 
 function retrievePostComments(req, res, next) {
-    const worker = req.app.get('worker');
-    worker.once('message', function (msg) {
-        if (msg.success) {
-            res.json(msg.reply);
-        } else {
-            next(msg.error);
-        }
-    });
-    worker.send({
-        module: 'posts',
-        function: 'retrieveComments',
-        args: {
-            id: req.params.id
-        }
-    });
+    const worker = req.app.get('worker-proxy');
+    const args = {
+        id: req.params.id        
+    };
+    worker.posts.retrieveComments(args)
+        .then(reply => res.json(reply))
+        .catch(error => next(error));
 }
 
 function retrievePost(req, res, next) {
-    const worker = req.app.get('worker');
-    worker.once('message', function (msg) {
-        if (msg.success) {
-            res.json(msg.reply);
-        } else {
-            next(msg.error);
-        }
-    });
-    worker.send({
-        module: 'posts',
-        function: 'retrieve',
-        args: {
-            id: req.params.id
-        }
-    });
+    const worker = req.app.get('worker-proxy');
+    const args = {
+        id: req.params.id
+    };
+    worker.posts.retrieve(args)
+        .then(reply => res.json(reply))
+        .catch(error => next(error));
 }
 
 function updatePost(req, res, next) {
-    const worker = req.app.get('worker');
-    worker.once('message', function (msg) {
-        if (msg.success) {
-            res.json(msg.reply);
-        } else {
-            next(msg.error);
-        }
-    });
-    worker.send({
-        module: 'posts',
-        function: 'update',
-        args: {
-            id: req.params.id,
-            title: req.body.title,
-            text: req.body.text
-        }
-    });
+    const worker = req.app.get('worker-proxy');
+    const args = {
+        id: req.params.id,
+        title: req.body.title,
+        text: req.body.text
+    };
+    worker.posts.update(args)
+        .then(reply => res.json(reply))
+        .catch(error => next(error));
 }
 
 function deletePost(req, res, next) {
-    const worker = req.app.get('worker');
-    worker.once('message', function (msg) {
-        if (msg.success) {
-            res.json(msg.reply);
-        } else {
-            next(msg.error);
-        }
-    });
-    worker.send({
-        module: 'posts',
-        function: 'delete',
-        args: {
-            id: req.params.id
-        }
-    });
+    const worker = req.app.get('worker-proxy');
+    const args = {
+        id: req.params.id
+    };
+    worker.posts.delete(args)
+        .then(reply => res.json(reply))
+        .catch(error => next(error));
 }
 
 function existsPost(req, res, next) {
-    const worker = req.app.get('worker');
-    worker.once('message', function (msg) {
-        if (msg.success) {
-            if (msg.reply) {
+    const worker = req.app.get('worker-proxy');
+    const args = {
+        id: req.params.id
+    };
+    worker.posts.exists(args)
+        .then(reply => {
+            if (reply) {
                 next();
             } else {
                 let error = new Error('Post Not Found');
                 error.status = 404;
-                next(error);
+                next(error);                
             }
-        } else {
-            next(msg.error);
-        }
-    });
-
-    worker.send({
-        module: 'posts',
-        function: 'exists',
-        args: {
-            id: req.params.id
-        }
-    });
+        })
+        .catch(error => next(error));
 }
 
 function requireAuthor(req, res, next) {
@@ -173,28 +117,23 @@ function requireAuthor(req, res, next) {
 function existsAuthor(req, res, next) {
     if (!('author' in req.body)) {
         next();
-    }
-    const worker = req.app.get('worker');
-    worker.once('message', function (msg) {
-        if (msg.success) {
-            if (msg.reply) {
-                next();
-            } else {
-                let error = new Error('Post Author Not Found');
-                error.status = 404;
-                next(error);
-            }
-        } else {
-            next(msg.error);
-        }
-    });
-    worker.send({
-        module: 'users',
-        function: 'exists',
-        args: {
+    } else {
+        const worker = req.app.get('worker-proxy');
+        const args = {
             id: req.body.author
-        }
-    });
+        };
+        worker.users.exists(args)
+            .then(reply => {
+                if (reply) {
+                    next();
+                } else {
+                    let error = new Error('Post Author Not Found');
+                    error.status = 404;
+                    next(error);
+                }                
+            })
+            .catch(error => next(error));
+    }
 }
 
 function requireTitle(req, res, next) {

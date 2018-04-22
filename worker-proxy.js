@@ -23,7 +23,7 @@ class Worker {
             if (message.success) {
                 task.resolve(message.reply);
             } else {
-                task.resolve(new Error(message.error));
+                task.reject(new Error(message.error));
             }
             this._runNext();
         });

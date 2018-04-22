@@ -28,7 +28,6 @@ mongoose.connection.once('open', function () {
     };
 
     process.on('message', function (msg) {
-        console.log(JSON.stringify(msg));
         modules[msg.module][msg.function](msg.args)
         .then((reply) => {
             process.send({
@@ -47,7 +46,7 @@ mongoose.connection.once('open', function () {
                     module: msg.module,
                     function: msg.function
                 },
-                error: error
+                error: error.message
             });
         });
     });

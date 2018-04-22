@@ -36,76 +36,43 @@ router.delete('/:id', existsUser);
 router.delete('/:id', deleteUser);
 
 function listUsers(req, res, next) {
-    const worker = req.app.get('worker');
-    worker.once('message', function(msg) {
-        if (msg.success) {
-            res.json(msg.reply);
-        } else {
-            next(msg.error);
-        }
-    });
-    worker.send({
-        module: 'users',
-        function: 'list',
-        args: {}
-    });
+    const worker = req.app.get('worker-proxy');
+    worker.users.list()
+        .then(reply => res.json(reply))
+        .catch(error => next(error));
 }
 
 function createUser(req, res, next) {
-    const worker = req.app.get('worker');
-    worker.once('message', function (msg) {
-        if (msg.success) {
-            res.status(201).json(msg.reply);
-        } else {
-            next(msg.error);
-        }
-    });
-    worker.send({
-        module: 'users',
-        function: 'create',
-        args: {
-            username: req.body.username,
-            email: req.body.email,
-            name: req.body.name,
-            password: req.body.password
-        }
-    });
+    const worker = req.app.get('worker-proxy');
+    const args = {
+        username: req.body.username,
+        email: req.body.email,
+        name: req.body.name,
+        password: req.body.password
+    };
+    worker.users.create(args)
+        .then(reply => res.json(reply))
+        .catch(error => next(error));
 }
 
 function retrieveUserComments(req, res, next) {
-    const worker = req.app.get('worker');
-    worker.once('message', function (msg) {
-        if (msg.success) {
-            res.json(msg.reply);
-        } else {
-            next(msg.error);
-        }
-    });
-    worker.send({
-        module: 'users',
-        function: 'retrieveComments',
-        args: {
-            id: req.params.id
-        }
-    });
+    const worker = req.app.get('worker-proxy');
+    const args = {
+        id: req.params.id
+    };
+    worker.users.retrieveComments(args)
+        .then(reply => res.json(reply))
+        .catch(error => next(error));
 }
 
 function retrieveUserPosts(req, res, next) {
-    const worker = req.app.get('worker');
-    worker.once('message', function (msg) {
-        if (msg.success) {
-            res.json(msg.reply);
-        } else {
-            next(msg.error);
-        }
-    });
-    worker.send({
-        module: 'users',
-        function: 'retrievePosts',
-        args: {
-            id: req.params.id
-        }
-    });
+    const worker = req.app.get('worker-proxy');
+    const args = {
+        id: req.params.id
+    };
+    worker.users.retrievePosts(args)
+        .then(reply => res.json(reply))
+        .catch(error => next(error));
 }
 
 function retrieveUser(req, res, next) {
@@ -119,43 +86,27 @@ function retrieveUser(req, res, next) {
 }
 
 function updateUser(req, res, next) {
-    const worker = req.app.get('worker');
-    worker.once('message', function (msg) {
-        if (msg.success) {
-            res.json(msg.reply);
-        } else {
-            next(msg.error);
-        }
-    });
-    worker.send({
-        module: 'users',
-        function: 'update',
-        args: {
-            id: req.params.id,
-            username: req.body.username,
-            email: req.body.email,
-            name: req.body.name,
-            password: req.body.password
-        }
-    });
+    const worker = req.app.get('worker-proxy');
+    const args = {
+        id: req.params.id,
+        username: req.body.username,
+        email: req.body.email,
+        name: req.body.name,
+        password: req.body.password
+    };
+    worker.users.update(args)
+        .then(reply => res.json(reply))
+        .catch(error => next(error));
 }
 
 function deleteUser(req, res, next) {
-    const worker = req.app.get('worker');
-    worker.once('message', function (msg) {
-        if (msg.success) {
-            res.json(msg.reply);
-        } else {
-            next(msg.error);
-        }
-    });
-    worker.send({
-        module: 'users',
-        function: 'delete',
-        args: {
-            id: req.params.id
-        }
-    });
+    const worker = req.app.get('worker-proxy');
+    const args = {
+        id: req.params.id,
+    };
+    worker.users.delete(args)
+        .then(reply => res.json(reply))
+        .catch(error => next(error));
 }
 
 function existsUser(req, res, next) {
@@ -190,28 +141,22 @@ function validateUsername(req, res, next) {
     if (!('username' in req.body)) {
         next();
     } else {
-        const worker = req.app.get('worker');
-        worker.once('message', function (msg) {
-            if (msg.success) {
-                if (msg.reply.valid) {
+        const worker = req.app.get('worker-proxy');
+        const args = {
+            id: req.params.id,
+            username: req.body.username
+        };
+        worker.users.validateUsername(args)
+            .then(reply => {
+                if (reply.valid) {
                     next();
                 } else {
-                    let error = new Error(`Invalid Username: ${msg.reply.tip}`);
-                    error.status = msg.reply.status || 422;
+                    let error = new Error(`Invalid Username: ${reply.tip}`);
+                    error.status = reply.status || 422;
                     next(error);
                 }
-            } else {
-                next(msg.error);
-            }
-        });
-        worker.send({
-            module: 'users',
-            function: 'validateUsername',
-            args: {
-                id: req.params.id,
-                username: req.body.username
-            }
-        });
+            })
+            .catch(error => next(error));
     }
 }
 
@@ -229,28 +174,22 @@ function validateEmail(req, res, next) {
     if (!('email' in req.body)) {
         next();
     } else {
-        const worker = req.app.get('worker');
-        worker.once('message', function (msg) {
-            if (msg.success) {
-                if (msg.reply.valid) {
+        const worker = req.app.get('worker-proxy');
+        const args = {
+            id: req.params.id,
+            email: req.body.email
+        };
+        worker.users.validateEmail(args)
+            .then(reply => {
+                if (reply.valid) {
                     next();
                 } else {
-                    let error = new Error(`Invalid Email: ${msg.reply.tip}`);
-                    error.status = msg.reply.status ||  422;
+                    let error = new Error(`Invalid Email: ${reply.tip}`);
+                    error.status = reply.status || 422;
                     next(error);
                 }
-            } else {
-                next(msg.error);
-            }
-        });
-        worker.send({
-            module: 'users',
-            function: 'validateEmail',
-            args: {
-                id: req.params.id,
-                email: req.body.email
-            }
-        });
+            })
+            .catch(error => next(error));
     }
 }
 
@@ -278,27 +217,22 @@ function validatePassword(req, res, next) {
     if (!('password' in req.body)) {
         next();
     } else {
-        const worker = req.app.get('worker');
-        worker.once('message', function (msg) {
-            if (msg.success) {
-                if (msg.reply.valid) {
+        const worker = req.app.get('worker-proxy');
+        const args = {
+            id: req.params.id,
+            password: req.body.password
+        };
+        worker.users.validatePassword(args)
+            .then(reply => {
+                if (reply.valid) {
                     next();
                 } else {
-                    let error = new Error(`Invalid Password: ${msg.reply.tip}`);
+                    let error = new Error(`Invalid Password: ${reply.tip}`);
                     error.status = 422;
                     next(error);
                 }
-            } else {
-                next(msg.error);
-            }
-        });
-        worker.send({
-            module: 'users',
-            function: 'validatePassword',
-            args: {
-                password: req.body.password
-            }
-        });
+            })
+            .catch(error => next(error));
     }
 }
 
@@ -306,22 +240,16 @@ function hashPassword(req, res, next) {
     if (!('password' in req.body)) {
         next();
     } else {
-        const worker = req.app.get('worker');
-        worker.once('message', function (msg) {
-            if (msg.success) {
-                req.body.password = msg.reply;
+        const worker = req.app.get('worker-proxy');
+        const args = {
+            password: req.body.password
+        }
+        worker.users.hashPassword(args)
+            .then(reply => {
+                req.body.password = reply;
                 next();
-            } else {
-                next(msg.error);
-            }
-        });
-        worker.send({
-            module: 'users',
-            function: 'hashPassword',
-            args: {
-                password: req.body.password
-            }
-        });
+            })
+            .catch(error => next(error));
     }
 }
 

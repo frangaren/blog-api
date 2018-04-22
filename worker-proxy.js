@@ -11,7 +11,7 @@ function FunctionProxy(target, moduleProp) {
                             if (msg.success) {
                                 resolve(msg.reply);
                             } else {
-                                reject(msg.error);
+                                reject(new Error(msg.error));
                             }
                         });
                         target.worker.send({

@@ -40,7 +40,7 @@ exports.retrieve = async function (args) {
 }
 
 exports.update = async function (args) {
-    let user = await User.findById(args.id).exec();
+    let user = await User.findById(args.id).select('+password').exec();
     user.username = args.username || user.username;
     user.email = args.email || user.email;
     user.name = args.name || user.name;

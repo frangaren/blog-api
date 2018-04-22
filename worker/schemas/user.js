@@ -15,7 +15,7 @@ const userSchema = mongoose.Schema({
 userSchema.path('username').required(true).unique(true);
 userSchema.path('email').required(true).unique(true);
 userSchema.path('name').required(true);
-userSchema.path('password').required(true);
+userSchema.path('password').required(true).select(false);
 
 const User = mongoose.model('User', userSchema);
 

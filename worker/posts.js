@@ -33,6 +33,7 @@ exports.retrieve = async function (args) {
 exports.update = async function (args) {
     let post = await Post.findById(args.id).exec();
     post.title = args.title || post.title;
+    post.author = args.author || post.author;
     post.text = args.text || post.text;
     post = await post.save();
     return post;

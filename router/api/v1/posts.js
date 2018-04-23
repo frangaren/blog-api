@@ -69,7 +69,8 @@ function updatePost(req, res, next) {
     const args = {
         id: req.params.id,
         title: req.body.title,
-        text: req.body.text
+        text: req.body.text,
+        author: req.body.author
     };
     worker.posts.update(args)
         .then(reply => res.json(reply))

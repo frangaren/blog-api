@@ -10,7 +10,7 @@ const Comment = mongoose.model('Comment');
 const saltRounds = 10;
 
 exports.list = async function (args) {
-    const users = await User.find().exec();
+    const users = await User.find().sort('username').exec();
     return users;
 }
 
@@ -25,12 +25,14 @@ exports.create = async function (args) {
 }
 
 exports.retrieveComments = async function (args) {
-    const comments = await Comment.find({ author: args.id }).exec();
+    const comments = await Comment.find({ author: args.id })
+        .sort('-creationDate').exec();
     return comments;
 }
 
 exports.retrievePosts = async function (args) {
-    const posts = await Post.find({ author: args.id }).exec();
+    const posts = await Post.find({ author: args.id })
+        .sort('-creationDate').exec();
     return posts;
 }
 

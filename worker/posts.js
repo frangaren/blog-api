@@ -6,7 +6,7 @@ const Post = mongoose.model('Post');
 const Comment = mongoose.model('Comment');
 
 exports.list = async function (args) {
-    const posts = await Post.find().exec();
+    const posts = await Post.find().sort('-creationDate').exec();
     return posts;
 }
 
@@ -20,7 +20,8 @@ exports.create = async function (args) {
 }
 
 exports.retrieveComments = async function (args) {
-    const comments = await Comment.find({ post: args.id }).exec();
+    const comments = await Comment.find({ post: args.id })
+        .sort('-creationDate').exec();
     return comments;
 }
 

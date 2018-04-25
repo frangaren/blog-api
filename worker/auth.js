@@ -92,3 +92,22 @@ exports.passwordAuthenticate = async function (args) {
         };
     }
 }
+
+exports.refreshAuthenticate = async function (args) {
+    if (!args.refreshToken) {
+        return {
+            valid: false
+        };
+    }
+    const entry = await AccessToken.findOne({ refreshToken: args.refreshToken })
+        .exec();
+    if (entry == null || entry.ip !== args.ip) {
+        return {
+            valid: false
+        };
+    }
+    return {
+        valid: true,
+        _id: entry.user
+    };
+}

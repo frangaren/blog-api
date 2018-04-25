@@ -20,11 +20,13 @@ mongoose.connection.once('open', function () {
     const Comment = require(path.join(__dirname, 'schemas', 'comment.js'));
     const Post = require(path.join(__dirname, 'schemas', 'post.js'));
     const User = require(path.join(__dirname, 'schemas', 'user.js'));
+    const AccessToken = require(path.join(__dirname, 'schemas', 'access-token.js'));
 
     const modules = {
         'comments': require(path.join(__dirname, 'comments.js')),
         'posts': require(path.join(__dirname, 'posts.js')),
-        'users': require(path.join(__dirname, 'users.js'))
+        'users': require(path.join(__dirname, 'users.js')),
+        'auth': require(path.join(__dirname, 'auth.js'))
     };
 
     process.on('message', function (msg) {

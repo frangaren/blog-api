@@ -6,21 +6,26 @@ const router = express.Router();
 
 router.get('/', listComments);
 
-router.post('/', requireAuthor);
+router.post('/', checkAuthentication);
+//router.post('/', requireAuthor);
 router.post('/', requirePost);
 router.post('/', requireText);
-router.post('/', existsAuthor);
+//router.post('/', existsAuthor);
 router.post('/', existsPost);
 router.post('/', createComment);
 
 router.get('/:id', existsComment);
 router.get('/:id', retrieveComment);
 
+router.patch('/:id', checkAuthentication);
+router.patch('/:id', checkPermission);
 router.patch('/:id', existsComment);
-router.patch('/:id', existsAuthor);
+//router.patch('/:id', existsAuthor);
 router.patch('/:id', existsPost);
 router.patch('/:id', updateComment);
 
+router.delete('/:id', checkAuthentication);
+router.delete('/:id', checkPermission);
 router.delete('/:id', existsComment);
 router.delete('/:id', deleteComment);
 
@@ -35,7 +40,7 @@ function createComment(req, res, next) {
     const worker = req.app.get('worker-proxy');
     const args = {
         post: req.body.post,
-        author: req.body.author,
+        author: req.body.authorizedUser,
         text: req.body.text
     };
     worker.comments.create(args)
@@ -58,7 +63,7 @@ function updateComment(req, res, next) {
     const args = {
         id: req.params.id,
         post: req.body.post,
-        author: req.body.author,
+        //author: req.body.author,
         text: req.body.text
     }
     worker.comments.update(args)
@@ -166,6 +171,57 @@ function requireText(req, res, next) {
     } else {
         next();
     }
+}
+
+function checkAuthentication(req, res, next) {
+    if (!req.headers.authorization) {
+        const error = new Error('HTTP authorization header required.');
+        error.status = 401;
+        next(error);
+    } else {
+        const parts = req.headers.authorization.split(' ');
+        if (parts[0] !== 'Bearer') {
+            const error = new Error('HTTP authorization must be a Bearer token');
+            error.status = 401;
+            next(error);
+        } else {
+            const worker = req.app.get('worker-proxy');
+            const args = {
+                accessToken: parts[1],
+                ip: req.connection.remoteAddress
+            };
+            worker.auth.checkAccessToken(args)
+                .then(reply => {
+                    if (reply.valid) {
+                        req.body.authorizedUser = reply._id;
+                        next();
+                    } else {
+                        const error = new Error('Invalid access token.');
+                        error.status = 401;
+                        next(error);
+                    }
+                })
+                .catch(error => next(error));
+        }
+    }
+}
+
+function checkPermission(req, res, next) {
+    const worker = req.app.get('worker-proxy');
+    const args = {
+        id: req.params.id
+    };
+    worker.comments.retrieve(args)
+        .then(reply => {
+            if (reply._id === req.body.authorizedUser) {
+                next();
+            } else {
+                const error = new Error('You don\'t have permission over this post.');
+                error.status = 401;
+                next(error);
+            }
+        })
+        .catch(error => next(error));
 }
 
 module.exports = router;

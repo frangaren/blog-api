@@ -101,6 +101,12 @@ exports.refreshAuthenticate = async function (args) {
     }
     const entry = await AccessToken.findOne({ refreshToken: args.refreshToken })
         .exec();
+    if (entry != null && entry.expirationDate < Date.now()) {
+        entry.remove();
+        return {
+            valid: false
+        };
+    }
     if (entry == null || entry.ip !== args.ip) {
         return {
             valid: false
@@ -110,4 +116,24 @@ exports.refreshAuthenticate = async function (args) {
         valid: true,
         _id: entry.user
     };
+}
+
+exports.checkAccessToken = async function (args) {
+    const entry = await AccessToken.findOne({ accessToken: args.accessToken })
+        .exec();  
+    if (entry != null && entry.expirationDate < Date.now()) {
+        entry.remove();
+        return {
+            valid: false
+        };
+    }
+    if (entry == null || entry.ip !== args.ip) {
+        return {
+            valid: false
+        };
+    }
+    return {
+        valid: true,
+        _id: entry.user
+    };  
 }

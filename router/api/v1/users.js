@@ -25,6 +25,7 @@ router.get('/:id/posts', retrieveUserPosts);
 router.get('/:id', existsUser);
 router.get('/:id', retrieveUser);
 
+router.patch('/:id', checkAuthentication);
 router.patch('/:id', existsUser);
 router.patch('/:id', validateUsername);
 router.patch('/:id', validateEmail);
@@ -32,6 +33,7 @@ router.patch('/:id', validatePassword);
 router.patch('/:id', hashPassword);
 router.patch('/:id', updateUser);
 
+router.delete('/:id', checkAuthentication);
 router.delete('/:id', existsUser);
 router.delete('/:id', deleteUser);
 
@@ -250,6 +252,39 @@ function hashPassword(req, res, next) {
                 next();
             })
             .catch(error => next(error));
+    }
+}
+
+function checkAuthentication(req, res, next) {
+    if (!req.headers.authorization) {
+        const error = new Error('HTTP authorization header required.');
+        error.status = 401;
+        next(error);
+    } else {
+        const parts = req.headers.authorization.split(' ');
+        if (parts[0] !== 'Bearer') {
+            const error = new Error('HTTP authorization must be a Bearer token');
+            error.status = 401;
+            next(error);
+        } else {
+            const worker = req.app.get('worker-proxy');
+            const args = {
+                accessToken: parts[1],
+                ip: req.connection.remoteAddress
+            };
+            worker.auth.checkAccessToken(args)
+                .then(reply => {
+                    if (reply.valid) {
+                        req.body.authorizedUser = reply._id;
+                        next();
+                    } else {
+                        const error = new Error('Invalid access token.');
+                        error.status = 401;
+                        next(error);                        
+                    }
+                })
+                .catch(error => next(error));
+        }
     }
 }
 

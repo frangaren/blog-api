@@ -26,6 +26,7 @@ router.get('/:id', existsUser);
 router.get('/:id', retrieveUser);
 
 router.patch('/:id', checkAuthentication);
+router.patch('/:id', checkPermission);
 router.patch('/:id', existsUser);
 router.patch('/:id', validateUsername);
 router.patch('/:id', validateEmail);
@@ -34,6 +35,7 @@ router.patch('/:id', hashPassword);
 router.patch('/:id', updateUser);
 
 router.delete('/:id', checkAuthentication);
+router.delete('/:id', checkPermission);
 router.delete('/:id', existsUser);
 router.delete('/:id', deleteUser);
 
@@ -285,6 +287,16 @@ function checkAuthentication(req, res, next) {
                 })
                 .catch(error => next(error));
         }
+    }
+}
+
+function checkPermission(req, res, next) {
+    if (req.params.id === req.body.authorizedUser) {
+        next();
+    } else {
+        const error = new Error('You don\'t have permission over this user.');
+        error.status = 401;
+        next(error);         
     }
 }
 

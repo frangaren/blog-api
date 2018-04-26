@@ -6,10 +6,11 @@ const router = express.Router();
 
 router.get('/', listPosts);
 
-router.post('/', requireAuthor);
+router.post('/', checkAuthentication);
+//router.post('/', requireAuthor);
 router.post('/', requireTitle);
 router.post('/', requireText);
-router.post('/', existsAuthor);
+//router.post('/', existsAuthor);
 router.post('/', createPost);
 
 router.get('/:id/comments', existsPost);
@@ -18,10 +19,14 @@ router.get('/:id/comments', retrievePostComments);
 router.get('/:id', existsPost);
 router.get('/:id', retrievePost);
 
+router.patch('/:id', checkAuthentication);
+router.patch('/:id', checkPermission);
 router.patch('/:id', existsPost);
-router.patch('/:id', existsAuthor);
+//router.patch('/:id', existsAuthor);
 router.patch('/:id', updatePost);
 
+router.delete('/:id', checkAuthentication);
+router.delete('/:id', checkPermission);
 router.delete('/:id', existsPost);
 router.delete('/:id', deletePost);
 
@@ -37,7 +42,7 @@ function createPost(req, res, next) {
     const args = {
         title: req.body.title,
         text: req.body.text,
-        author: req.body.author
+        author: req.body.authorizedUser
     };
     worker.posts.create(args)
         .then(reply => res.status(201).json(reply))
@@ -69,8 +74,8 @@ function updatePost(req, res, next) {
     const args = {
         id: req.params.id,
         title: req.body.title,
-        text: req.body.text,
-        author: req.body.author
+        text: req.body.text
+        //author: req.body.author
     };
     worker.posts.update(args)
         .then(reply => res.json(reply))
@@ -155,6 +160,57 @@ function requireText(req, res, next) {
     } else {
         next();
     }
+}
+
+function checkAuthentication(req, res, next) {
+    if (!req.headers.authorization) {
+        const error = new Error('HTTP authorization header required.');
+        error.status = 401;
+        next(error);
+    } else {
+        const parts = req.headers.authorization.split(' ');
+        if (parts[0] !== 'Bearer') {
+            const error = new Error('HTTP authorization must be a Bearer token');
+            error.status = 401;
+            next(error);
+        } else {
+            const worker = req.app.get('worker-proxy');
+            const args = {
+                accessToken: parts[1],
+                ip: req.connection.remoteAddress
+            };
+            worker.auth.checkAccessToken(args)
+                .then(reply => {
+                    if (reply.valid) {
+                        req.body.authorizedUser = reply._id;
+                        next();
+                    } else {
+                        const error = new Error('Invalid access token.');
+                        error.status = 401;
+                        next(error);
+                    }
+                })
+                .catch(error => next(error));
+        }
+    }
+}
+
+function checkPermission(req, res, next) {
+    const worker = req.app.get('worker-proxy');
+    const args = {
+        id: req.params.id
+    };
+    worker.posts.retrieve(args)
+        .then(reply => {
+            if (reply.author === req.body.authorizedUser) {
+                next();
+            } else {
+                const error = new Error('You don\'t have permission over this post.');
+                error.status = 401;
+                next(error);
+            }
+        })
+        .catch(error => next(error));
 }
 
 module.exports = router;

@@ -21,7 +21,7 @@ exports.issueToken = async function (args) {
     entry.expirationDate = Date.now() + 36000000;
     entry = await entry.save();
     return {
-        _id: entry.id, //DEBUG
+        _id: entry.user, //DEBUG
         access_token: accessToken,
         token_type: 'bearer',
         expires_in: 3600,

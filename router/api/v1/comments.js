@@ -213,10 +213,10 @@ function checkPermission(req, res, next) {
     };
     worker.comments.retrieve(args)
         .then(reply => {
-            if (reply._id === req.body.authorizedUser) {
+            if (reply.author === req.body.authorizedUser) {
                 next();
             } else {
-                const error = new Error('You don\'t have permission over this post.');
+                const error = new Error('You don\'t have permission over this comment.');
                 error.status = 401;
                 next(error);
             }

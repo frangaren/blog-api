@@ -264,7 +264,7 @@ function checkAuthentication(req, res, next) {
         next(error);
     } else {
         const parts = req.headers.authorization.split(' ');
-        if (parts[0] !== 'Bearer') {
+        if (parts[0].toLowerCase() !== 'bearer') {
             const error = new Error('HTTP authorization must be a Bearer token');
             error.status = 401;
             next(error);
